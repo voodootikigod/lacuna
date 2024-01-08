@@ -1,95 +1,105 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+import Image from "next/image";
+
+// import styles from './page.module.css'
+import {
+  Button,
+  AppShell,
+  Center,
+  Title,
+  NumberInput,
+  Space,
+  Stack,
+} from "@mantine/core";
+import { DatePickerInput, DatePicker } from "@mantine/dates";
+import { useEffect, useState } from "react";
+
+const DAY = 1000 * 60 * 60 * 24;
 
 export default function Home() {
+  const [start, setStart] = useState(-1);
+  const [lacuna, setLacuna] = useState(28);
+  useEffect(() => {
+    const start = localStorage.getItem("start");
+    if (start && parseInt(start, 10) > 0) {
+      setStart(parseInt(start, 10));
+    } else {
+      setStart(0);
+    }
+    const lacuna = localStorage.getItem("lacuna");
+    if (lacuna && parseInt(lacuna, 10) > 0) {
+      setLacuna(parseInt(lacuna, 10));
+    } else {
+      setLacuna(28);
+    }
+  }, []);
+
+  const daysSince = (start) => {
+    const now = new Date().getTime();
+    const diff = now - start;
+    const days = Math.floor(diff / DAY);
+    return days % lacuna;
+  };
+
+  const resetToDay = (daysFromNow) => {
+    return () => {
+      const now = new Date().getTime();
+      const reset = new Date(now + daysFromNow * DAY).getTime();
+      localStorage.setItem("start", reset);
+      setStart(reset);
+    };
+  };
+
+  const dateFn = (date) => {
+    if (date == -1) return "Loading...";
+    if (date == 0) {
+      return "Not Set";
+    }
+    return new Date(date).toLocaleDateString();
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
+    <AppShell
+      header={{ height: 60 }}
+      withBorder={false}
+      padding={{ base: 10, sm: 15, lg: "xl" }}
+    >
+      <AppShell.Header>
+        <Center>
+          <Title>Lacuna</Title>
+        </Center>
+      </AppShell.Header>
+      <AppShell.Main>
+        <Stack align="center" gap="lg">
+          <div>
+            <b>Started:</b> {dateFn(start)}
+          </div>
+          <div>
+            <b>Days Since:</b> {daysSince(start)}
+          </div>
+        </Stack>
+        <Space h="xl" />
+        <Stack align="center" gap="lg">
+          <Button onClick={resetToDay(0)}>Reset To Today</Button>
+          <Button onClick={resetToDay(-1)}>Reset To Yesterday</Button>
+        </Stack>
+        <Space h="xl" />
         <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
+          <Center>
+            <NumberInput
+              label="Lacuna"
+              min={1}
+              max={100}
+              value={lacuna}
+              onChange={(value) => {
+                localStorage.setItem("lacuna", value);
+                setLacuna(value);
+              }}
             />
-          </a>
+          </Center>
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+        <Space h="xl" />
+      </AppShell.Main>
+    </AppShell>
+  );
 }
