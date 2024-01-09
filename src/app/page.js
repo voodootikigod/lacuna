@@ -9,9 +9,9 @@ import {
   Title,
   NumberInput,
   Space,
+  Box,
   Stack,
 } from "@mantine/core";
-import { DatePickerInput, DatePicker } from "@mantine/dates";
 import { useEffect, useState } from "react";
 
 const DAY = 1000 * 60 * 60 * 24;
@@ -32,9 +32,17 @@ export default function Home() {
     } else {
       setLacuna(28);
     }
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/service-worker.js")
+        .then((registration) => Notification.requestPermission())
+        .then((registration) => console.log("scope is: ", registration.scope));
+    }
   }, []);
 
   const daysSince = (start) => {
+    if (start == -1) return "Loading...";
+    if (start == 0) return "Not Set";
     const now = new Date().getTime();
     const diff = now - start;
     const days = Math.floor(diff / DAY);
@@ -57,16 +65,19 @@ export default function Home() {
     }
     return new Date(date).toLocaleDateString();
   };
+  const headerHeight = 80;
 
   return (
     <AppShell
-      header={{ height: 60 }}
-      withBorder={false}
+      header={{ height: headerHeight }}
+      withBorder={true}
       padding={{ base: 10, sm: 15, lg: "xl" }}
     >
       <AppShell.Header>
-        <Center>
-          <Title>Lacuna</Title>
+        <Center h={headerHeight}>
+          <Box>
+            <Title>Lacuna</Title>
+          </Box>
         </Center>
       </AppShell.Header>
       <AppShell.Main>
